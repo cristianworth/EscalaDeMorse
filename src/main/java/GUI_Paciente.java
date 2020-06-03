@@ -2,6 +2,11 @@
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -16,9 +21,13 @@ public class GUI_Paciente extends javax.swing.JFrame {
     private String Codigo;
     private String Nome;
     private String Idade;
+    private Date DataNasc;
+    SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
 
     public GUI_Paciente() {
         initComponents();
+
+        TestaData();
 
         // Cria o objeto DBConexao para conectar ao banco de dados
         try {
@@ -35,37 +44,78 @@ public class GUI_Paciente extends javax.swing.JFrame {
 
     }
 
-    private void SetarValores() {
+    public void TestaData() {
+        String dataRecebida = "02/06/2020";
+        if (DataValida(dataRecebida)) {
+            Date data = StringToDate(dataRecebida);
+            System.out.println("Data banco = " + data);
+            System.out.println("Data String = " + DateToString(data));
+
+            Date dataNormal = StringToDate(dataRecebida);
+            System.out.println("dataNormal = " + dataNormal);
+            Date dataSQL = new java.sql.Date(dataNormal.getTime());
+            System.out.println("dataSQL = " + dataSQL);
+            System.out.println("Data banco para string = " + DateToString(dataSQL));
+        } else {
+            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
+        }
+
+    }
+
+    public String DateToString(Date data) {
+        return formato.format(data);
+    }
+
+    public Date StringToDate(String data) {
+        try {
+            //SimpleDateFormat dataBanco = new SimpleDateFormat("yyyy-MM-dd");
+            return formato.parse(data);
+        } catch (ParseException ex) {
+            Logger.getLogger(GUI_Paciente.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    public boolean DataValida(String data) {
+        try {
+            formato.parse(data);
+            return true;
+        } catch (ParseException ex) {
+            return false;
+        }
+    }
+
+    private void BuscaValores() {
         Codigo = jtfCodigo.getText();
         Nome = jtfNome.getText();
-        Idade = jtfIdade.getText();
+        DataNasc = StringToDate(jtfDataNasc.getText());
+        DataNasc = new java.sql.Date(DataNasc.getTime());
     }
 
     private void Listar() {
-        String colunas[] = {"Cod", "Nome", "Idade"};
+        String colunas[] = {"Cod", "Nome", "Data Nasc."};
         modelo = new DefaultTableModel(colunas, 0);
 
         try {
-            ResultSet rec = st.executeQuery("SELECT * FROM Paciente");
+            ResultSet rec = st.executeQuery("SELECT codigo, nome, DATE_FORMAT(data_nascimento, '%d/%m/%Y') as data_nascimento FROM Paciente");
             while (rec.next()) {
                 String codigo = rec.getString("codigo");
                 String nome = rec.getString("nome");
+                String nascimento = rec.getString("data_nascimento");
 
-                modelo.addRow(new Object[]{codigo, nome});
+                modelo.addRow(new Object[]{codigo, nome, nascimento});
             }
         } catch (SQLException s) {
-            System.out.println("SQL Error: " + s.toString() + " " + s.getErrorCode() + " " + s.getSQLState());
+            //System.out.println("SQL Error: " + s.toString() + " " + s.getErrorCode() + " " + s.getSQLState());
+            JOptionPane.showMessageDialog(this, "Erro ao listar!! " + s.toString());
         }
         jtTabela.setModel(modelo);
     }
 
     public void preencherCampos() {
-        try {
-            jtfCodigo.setText(jtTabela.getModel().getValueAt(jtTabela.getSelectedRow(), 0).toString());
-            jtfNome.setText(jtTabela.getModel().getValueAt(jtTabela.getSelectedRow(), 1).toString());
-            //jtfIdade.setText(jtTabela.getModel().getValueAt(jtTabela.getSelectedRow(), 2).toString());
-        } catch (Exception s) {
-        }
+        jtfCodigo.setText(jtTabela.getModel().getValueAt(jtTabela.getSelectedRow(), 0).toString());
+        jtfNome.setText(jtTabela.getModel().getValueAt(jtTabela.getSelectedRow(), 1).toString());
+        jtfDataNasc.setText(jtTabela.getModel().getValueAt(jtTabela.getSelectedRow(), 2).toString());
     }
 
     /**
@@ -80,16 +130,18 @@ public class GUI_Paciente extends javax.swing.JFrame {
         jbListar = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jtTabela = new javax.swing.JTable();
-        jbIncluir = new javax.swing.JButton();
+        jbOrdenar = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jtfCodigo = new javax.swing.JTextField();
+        jtfNome = new javax.swing.JTextField();
+        jtfDataNasc = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jftfDataNasc = new javax.swing.JFormattedTextField();
+        jbIncluir = new javax.swing.JButton();
         jbAlterar = new javax.swing.JButton();
         jbExcluir = new javax.swing.JButton();
-        jbOrdenar = new javax.swing.JButton();
-        jtfCodigo = new javax.swing.JTextField();
-        jtfNome = new javax.swing.JTextField();
-        jtfIdade = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Java DBA");
@@ -109,10 +161,20 @@ public class GUI_Paciente extends javax.swing.JFrame {
                 {null, null, null}
             },
             new String [] {
-                "Cod", "Nome", "Idade"
+                "Cod", "Nome", "Data Nasc."
             }
         ));
         jScrollPane2.setViewportView(jtTabela);
+
+        jbOrdenar.setText("Ordenar por Nome");
+
+        jLabel1.setText("Codigo:");
+
+        jLabel2.setText("Nome:");
+
+        jLabel3.setText("Data Nasc.:");
+
+        jftfDataNasc.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter()));
 
         jbIncluir.setText("Incluir");
         jbIncluir.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -120,12 +182,6 @@ public class GUI_Paciente extends javax.swing.JFrame {
                 jbIncluirMouseClicked(evt);
             }
         });
-
-        jLabel1.setText("Codigo:");
-
-        jLabel2.setText("Nome:");
-
-        jLabel3.setText("Idade:");
 
         jbAlterar.setText("Alterar");
         jbAlterar.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -141,7 +197,55 @@ public class GUI_Paciente extends javax.swing.JFrame {
             }
         });
 
-        jbOrdenar.setText("Ordenar por Nome");
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jtfCodigo, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+                            .addComponent(jtfNome)
+                            .addComponent(jtfDataNasc))
+                        .addGap(61, 61, 61)
+                        .addComponent(jftfDataNasc, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jbIncluir)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jbAlterar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jtfCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jtfNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jtfDataNasc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jftfDataNasc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jbAlterar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jbIncluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -150,22 +254,7 @@ public class GUI_Paciente extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(jbIncluir)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jbAlterar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jtfCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtfNome, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtfIdade, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -177,31 +266,14 @@ public class GUI_Paciente extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(23, 23, 23)
+                .addContainerGap(23, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jbListar, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
                     .addComponent(jbOrdenar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jtfCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jtfNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jtfIdade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jbAlterar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jbIncluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -212,44 +284,56 @@ public class GUI_Paciente extends javax.swing.JFrame {
     }//GEN-LAST:event_jbListarMouseClicked
 
     private void jbIncluirMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbIncluirMouseClicked
-        SetarValores();
+        String dataRecebida = jtfDataNasc.getText();
+        if (DataValida(dataRecebida)) {
+            BuscaValores();
 
-        String values = "'" + Nome + "'";
-        String sql = "INSERT INTO Paciente (nome) VALUES(" + values + ")";
+            String values = "'" + Nome + "', '" + DataNasc + "'";
+            String sql = "INSERT INTO Paciente (nome, data_nascimento) VALUES(" + values + ")";
 
-        System.out.println(sql);
-        try {
-            int resp = st.executeUpdate(sql);
-            if (resp == 1) {
-                Listar();
+            System.out.println(sql);
+            try {
+                int resp = st.executeUpdate(sql);
+                if (resp == 1) {
+                    Listar();
+                }
+            } catch (SQLException s) {
+                JOptionPane.showMessageDialog(this, "Informações não incluida!! " + s.toString());
             }
-        } catch (SQLException s) {
-            JOptionPane.showMessageDialog(this, "Informações não incluida!! " + s.toString());
+        } else {
+            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
         }
     }//GEN-LAST:event_jbIncluirMouseClicked
 
     private void jbAlterarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbAlterarMouseClicked
-        SetarValores();
+        String dataRecebida = jtfDataNasc.getText();
+        if (DataValida(dataRecebida)) {
+            BuscaValores();
 
-        String set = " SET nome='" + Nome + "', cpf=" + "046";
-        String where = " WHERE codigo=" + Codigo;
+            String set = " SET nome='" + Nome + "', data_nascimento='" + DataNasc + "'";
+            String where = " WHERE codigo=" + Codigo;
+            String sql = "UPDATE Paciente" + set + where;
 
-        String sql = "UPDATE Paciente" + set + where;
-
-        try {
-            int resp = st.executeUpdate(sql);
-            if (resp == 1) {
-                Listar();
+            System.out.println(sql);
+            try {
+                System.out.println("Antes de Executar");     
+                int resp = st.executeUpdate(sql);
+                System.out.println("Depois de Executar");     
+                if (resp == 1) {
+                    //Listar();
+                }
+            } catch (SQLException s) {
+                JOptionPane.showMessageDialog(this, "Informações não alteradas!! " + s.toString());
             }
-        } catch (SQLException s) {
-            JOptionPane.showMessageDialog(this, "Informações não alteradas!! " + s.toString());
+        } else {
+            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
         }
     }//GEN-LAST:event_jbAlterarMouseClicked
 
     private void jbExcluirMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbExcluirMouseClicked
         int row = jtTabela.getSelectedRow();
         int column = 0; //coluna do codigo
-        String codigoSelecionado =  jtTabela.getValueAt(row, column).toString();
+        String codigoSelecionado = jtTabela.getValueAt(row, column).toString();
         String sql = "DELETE FROM Paciente WHERE codigo=" + codigoSelecionado;
 
         try {
@@ -302,15 +386,17 @@ public class GUI_Paciente extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton jbAlterar;
     private javax.swing.JButton jbExcluir;
     private javax.swing.JButton jbIncluir;
     private javax.swing.JButton jbListar;
     private javax.swing.JButton jbOrdenar;
+    private javax.swing.JFormattedTextField jftfDataNasc;
     private javax.swing.JTable jtTabela;
     private javax.swing.JTextField jtfCodigo;
-    private javax.swing.JTextField jtfIdade;
+    private javax.swing.JTextField jtfDataNasc;
     private javax.swing.JTextField jtfNome;
     // End of variables declaration//GEN-END:variables
 }

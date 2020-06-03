@@ -2,14 +2,13 @@ CREATE SCHEMA `MorseCristian`;
 CREATE TABLE `MorseCristian`.`Paciente` (
   `codigo` INT(11) NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NULL,
-  `data_nascimento` DATETIME NULL,
-  `cpf` VARCHAR(45) NULL,
+  `data_nascimento` DATE NULL,
   PRIMARY KEY (`codigo`)
 );
 CREATE TABLE `MorseCristian`.`Formulario` (
   `codigo` INT(11) NOT NULL AUTO_INCREMENT,
   `descricao` VARCHAR(200) NULL,
-  `data` DATETIME NULL,
+  `data` DATE NULL,
   `resultado1` INT NULL,
   `resultado2` INT NULL,
   `resultado3` INT NULL,
