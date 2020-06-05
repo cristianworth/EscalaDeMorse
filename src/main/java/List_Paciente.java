@@ -13,16 +13,16 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-public class GUI_Paciente extends javax.swing.JFrame {
+public class List_Paciente extends javax.swing.JFrame {
 
     Statement st;
     DefaultTableModel modelo;
     private String Codigo;
     private String Nome;
     private Date DataNasc;
-    SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
 
-    public GUI_Paciente() {
+    //SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+    public List_Paciente() {
         initComponents();
 
         TestaData();
@@ -30,67 +30,45 @@ public class GUI_Paciente extends javax.swing.JFrame {
         // Cria o objeto DBConexao para conectar ao banco de dados
         try {
             st = new DBConexao().getConnection();
-            Listar("");
-            jtTabela.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    preencherCampos();
-                }
-            });
-
         } catch (Exception e) {
             System.out.println("Error: " + e.toString() + e.getMessage());
         }
+
+        Listar("");
+        jtTabela.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                preencherCampos();
+            }
+        });
 
     }
 
     public void TestaData() {
         String dataRecebida = "02/06/2020";
-        if (DataValida(dataRecebida)) {
-            Date data = StringToDate(dataRecebida);
+        if (Utilidades.DataValida(dataRecebida)) {
+            Date data = Utilidades.StringToDate(dataRecebida);
             System.out.println("Data banco = " + data);
-            System.out.println("Data String = " + DateToString(data));
+            System.out.println("Data String = " + Utilidades.DateToString(data));
 
-            Date dataNormal = StringToDate(dataRecebida);
+            Date dataNormal = Utilidades.StringToDate(dataRecebida);
             System.out.println("dataNormal = " + dataNormal);
             Date dataSQL = new java.sql.Date(dataNormal.getTime());
             System.out.println("dataSQL = " + dataSQL);
-            System.out.println("Data banco para string = " + DateToString(dataSQL));
+            System.out.println("Data banco para string = " + Utilidades.DateToString(dataSQL));
         } else {
             JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
         }
 
     }
 
-    public void LimparCampos () {
+    public void LimparCampos() {
         jtfNome.setText("");
         jtfDataNasc.setText("");
-    }
-    
-    public String DateToString(Date data) {
-        return formato.format(data);
-    }
-
-    public Date StringToDate(String data) {
-        try {
-            return formato.parse(data);
-        } catch (ParseException ex) {
-            Logger.getLogger(GUI_Paciente.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-    }
-
-    public boolean DataValida(String data) {
-        try {
-            formato.parse(data);
-            return true;
-        } catch (ParseException ex) {
-            return false;
-        }
     }
 
     private void BuscaValores() {
         Nome = jtfNome.getText();
-        DataNasc = StringToDate(jtfDataNasc.getText());
+        DataNasc = Utilidades.StringToDate(jtfDataNasc.getText());
         DataNasc = new java.sql.Date(DataNasc.getTime());
     }
 
@@ -302,7 +280,7 @@ public class GUI_Paciente extends javax.swing.JFrame {
 
     private void jbIncluirMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbIncluirMouseClicked
         String dataRecebida = jtfDataNasc.getText();
-        if (DataValida(dataRecebida)) {
+        if (Utilidades.DataValida(dataRecebida)) {
             BuscaValores();
 
             String values = "'" + Nome + "', '" + DataNasc + "'";
@@ -324,7 +302,7 @@ public class GUI_Paciente extends javax.swing.JFrame {
 
     private void jbAlterarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbAlterarMouseClicked
         String dataRecebida = jtfDataNasc.getText();
-        if (DataValida(dataRecebida)) {
+        if (Utilidades.DataValida(dataRecebida)) {
             BuscaValores();
 
             String codigoSelecionado = BuscaCodigoSelecionado();
@@ -382,21 +360,23 @@ public class GUI_Paciente extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GUI_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(List_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GUI_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(List_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GUI_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(List_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUI_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(List_Paciente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new GUI_Paciente().setVisible(true);
+                new List_Paciente().setVisible(true);
             }
         });
     }

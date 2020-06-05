@@ -7,7 +7,6 @@ CREATE TABLE `MorseCristian`.`Paciente` (
 );
 CREATE TABLE `MorseCristian`.`Formulario` (
   `codigo` INT(11) NOT NULL AUTO_INCREMENT,
-  `descricao` VARCHAR(200) NULL,
   `data` DATE NULL,
   `resultado1` INT NULL,
   `resultado2` INT NULL,
