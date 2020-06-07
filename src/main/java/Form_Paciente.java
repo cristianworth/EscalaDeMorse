@@ -1,31 +1,22 @@
-
-import classes.Paciente;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-/**
- *
- * @author PICHAU
- */
 public class Form_Paciente extends javax.swing.JFrame {
 
     Statement st;
     DefaultTableModel modelo;
-    private String Codigo;
+    private int CodigoEditar = 0;
     private String Nome;
     private Date DataNasc;
 
     public Form_Paciente() {
+        //construtor do incluir
         initComponents();
-
+        this.setLocationRelativeTo(null);
         try {
             st = new DBConexao().getConnection();
         } catch (Exception e) {
@@ -33,70 +24,75 @@ public class Form_Paciente extends javax.swing.JFrame {
         }
     }
 
-    public Form_Paciente(String codigo) {
+    public Form_Paciente(int codigo) {
+        //construtor do editar
         initComponents();
-        Codigo = codigo;
-
+        this.setLocationRelativeTo(null);
+        CodigoEditar = codigo;
         try {
             st = new DBConexao().getConnection();
         } catch (Exception e) {
             System.out.println("Error: " + e.toString() + e.getMessage());
         }
+        BuscaValorEditar();
     }
 
-    private void BuscaValores() {
+    public void BuscaValorEditar() {
+        try {
+            String sql = "SELECT codigo, nome, DATE_FORMAT(data_nascimento, '%d/%m/%Y') as data_nascimento FROM Paciente WHERE codigo=" + CodigoEditar;
+            System.out.println(sql);
+            ResultSet rec = st.executeQuery(sql);
+            while (rec.next()) {
+                jtfNome.setText(rec.getString("nome"));
+                jtfDataNasc.setText(rec.getString("data_nascimento"));
+            }
+        } catch (SQLException s) {
+            JOptionPane.showMessageDialog(this, "Erro ao listar!! " + s.toString());
+        }
+    }
+
+    private void BuscaValorCampos() {
         Nome = jtfNome.getText();
         DataNasc = Utilidades.StringToDate(jtfDataNasc.getText());
         DataNasc = new java.sql.Date(DataNasc.getTime());
     }
 
     public void Alterar() {
-        String dataRecebida = jtfDataNasc.getText();
-        if (Utilidades.DataValida(dataRecebida)) {
-            BuscaValores();
+        BuscaValorCampos();
 
-            String codigoSelecionado = Codigo;
-            String set = " SET nome='" + Nome + "', data_nascimento='" + DataNasc + "'";
-            String where = " WHERE codigo=" + codigoSelecionado;
-            String sql = "UPDATE Paciente" + set + where;
+        String set = " SET nome='" + Nome + "', data_nascimento='" + DataNasc + "'";
+        String where = " WHERE codigo=" + CodigoEditar;
+        String sql = "UPDATE Paciente" + set + where;
 
-            try {
-                int resp = st.executeUpdate(sql);
-                if (resp == 1) {
-                    List_Paciente frame = new List_Paciente();
-                    frame.setVisible(true);
-                    this.dispose();
-                }
-            } catch (SQLException s) {
-                JOptionPane.showMessageDialog(this, "Informações não alteradas!! " + s.toString());
+        try {
+            int resp = st.executeUpdate(sql);
+            if (resp == 1) {
+                List_Paciente frame = new List_Paciente();
+                frame.setVisible(true);
+                this.dispose();
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
+        } catch (SQLException s) {
+            JOptionPane.showMessageDialog(this, "Informações não alteradas!! " + s.toString());
         }
     }
 
     public void Incluir() {
-        String dataRecebida = jtfDataNasc.getText();
-        if (Utilidades.DataValida(dataRecebida)) {
-            BuscaValores();
+        BuscaValorCampos();
 
-            String values = "'" + Nome + "', '" + DataNasc + "'";
-            String sql = "INSERT INTO Paciente (nome, data_nascimento) VALUES(" + values + ")";
+        String values = "'" + Nome + "', '" + DataNasc + "'";
+        String sql = "INSERT INTO Paciente (nome, data_nascimento) VALUES(" + values + ")";
 
-            System.out.println(sql);
-            try {
-                int resp = st.executeUpdate(sql);
-                System.out.println("ue");
-                if (resp == 1) {
-                    List_Paciente frame = new List_Paciente();
-                    frame.setVisible(true);
-                    this.dispose();
-                }
-            } catch (SQLException s) {
-                JOptionPane.showMessageDialog(this, "Informações não incluida!! " + s.toString());
+        System.out.println(sql);
+        try {
+            int resp = st.executeUpdate(sql);
+            System.out.println("ue");
+            if (resp == 1) {
+                List_Paciente frame = new List_Paciente();
+                frame.setVisible(true);
+                this.dispose();
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
+        } catch (SQLException s) {
+            JOptionPane.showMessageDialog(this, "Informações não incluida!! " + s.toString());
         }
     }
 
@@ -114,8 +110,10 @@ public class Form_Paciente extends javax.swing.JFrame {
         jbSalvar = new javax.swing.JButton();
         jtfDataNasc = new javax.swing.JTextField();
         jtfNome = new javax.swing.JTextField();
+        jbMenu = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Form Paciente");
 
         jLabel4.setText("Nome:");
 
@@ -128,21 +126,31 @@ public class Form_Paciente extends javax.swing.JFrame {
             }
         });
 
+        jbMenu.setText("<<< Voltar");
+        jbMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jbMenuMouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jtfNome)
-                    .addComponent(jtfDataNasc, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(19, 19, 19)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jtfNome)
+                            .addComponent(jtfDataNasc, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jbMenu)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jbSalvar)))
                 .addContainerGap(24, Short.MAX_VALUE))
         );
@@ -158,7 +166,9 @@ public class Form_Paciente extends javax.swing.JFrame {
                     .addComponent(jLabel5)
                     .addComponent(jtfDataNasc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jbSalvar)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jbSalvar)
+                    .addComponent(jbMenu))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -166,13 +176,23 @@ public class Form_Paciente extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbSalvarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbSalvarMouseClicked
-        if (Codigo != "") {
-            //Alterar();
+        String dataRecebida = jtfDataNasc.getText();
+        if (Utilidades.DataValida(dataRecebida)) {
+            if (CodigoEditar > 0) {
+                Alterar();
+            } else {
+                Incluir();
+            }
         } else {
-            //Incluir();
+            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
         }
-        Incluir();
     }//GEN-LAST:event_jbSalvarMouseClicked
+
+    private void jbMenuMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbMenuMouseClicked
+        List_Paciente form = new List_Paciente();
+        form.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jbMenuMouseClicked
 
     /**
      * @param args the command line arguments
@@ -217,6 +237,7 @@ public class Form_Paciente extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JButton jbMenu;
     private javax.swing.JButton jbSalvar;
     private javax.swing.JTextField jtfDataNasc;
     private javax.swing.JTextField jtfNome;

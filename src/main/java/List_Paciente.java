@@ -17,15 +17,10 @@ public class List_Paciente extends javax.swing.JFrame {
 
     Statement st;
     DefaultTableModel modelo;
-    private String Codigo;
-    private String Nome;
-    private Date DataNasc;
 
-    //SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     public List_Paciente() {
         initComponents();
-
-        TestaData();
+        this.setLocationRelativeTo(null);
 
         // Cria o objeto DBConexao para conectar ao banco de dados
         try {
@@ -37,52 +32,25 @@ public class List_Paciente extends javax.swing.JFrame {
         Listar("");
         jtTabela.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                preencherCampos();
+                //faz alguma ação quando clickar na tabela
             }
         });
-
     }
 
-    public void TestaData() {
-        String dataRecebida = "02/06/2020";
-        if (Utilidades.DataValida(dataRecebida)) {
-            Date data = Utilidades.StringToDate(dataRecebida);
-            System.out.println("Data banco = " + data);
-            System.out.println("Data String = " + Utilidades.DateToString(data));
-
-            Date dataNormal = Utilidades.StringToDate(dataRecebida);
-            System.out.println("dataNormal = " + dataNormal);
-            Date dataSQL = new java.sql.Date(dataNormal.getTime());
-            System.out.println("dataSQL = " + dataSQL);
-            System.out.println("Data banco para string = " + Utilidades.DateToString(dataSQL));
-        } else {
-            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
-        }
-
-    }
-
-    public void LimparCampos() {
-        jtfNome.setText("");
-        jtfDataNasc.setText("");
-    }
-
-    private void BuscaValores() {
-        Nome = jtfNome.getText();
-        DataNasc = Utilidades.StringToDate(jtfDataNasc.getText());
-        DataNasc = new java.sql.Date(DataNasc.getTime());
-    }
-
-    public void preencherCampos() {
+    public boolean LinhaValida() {
         int row = jtTabela.getSelectedRow();
-        DefaultTableModel model = (DefaultTableModel) jtTabela.getModel();
-        jtfNome.setText(model.getValueAt(row, 1).toString());
-        jtfDataNasc.setText(model.getValueAt(row, 2).toString());
+        System.out.println("row = " + row);
+        if (row >= 0) { //zero é a primeira coluna
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public String BuscaCodigoSelecionado() {
+    public int BuscaCodigoSelecionado() {
         int row = jtTabela.getSelectedRow();
         int column = 0; //coluna do codigo
-        String codigoSelecionado = jtTabela.getValueAt(row, column).toString();
+        int codigoSelecionado = Integer.valueOf(jtTabela.getValueAt(row, column).toString());
         return codigoSelecionado;
     }
 
@@ -123,17 +91,14 @@ public class List_Paciente extends javax.swing.JFrame {
         jbOrdenar = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jtTabela = new javax.swing.JTable();
-        jPanel1 = new javax.swing.JPanel();
-        jtfNome = new javax.swing.JTextField();
-        jtfDataNasc = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         jbIncluir = new javax.swing.JButton();
         jbAlterar = new javax.swing.JButton();
         jbExcluir = new javax.swing.JButton();
+        jbMenu = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Paciente");
+        setTitle("Lista Paciente");
+        setPreferredSize(new java.awt.Dimension(492, 300));
         setResizable(false);
 
         jbListar.setText("Listar");
@@ -163,10 +128,6 @@ public class List_Paciente extends javax.swing.JFrame {
         ));
         jScrollPane2.setViewportView(jtTabela);
 
-        jLabel2.setText("Nome:");
-
-        jLabel3.setText("Data Nasc.:");
-
         jbIncluir.setText("Incluir");
         jbIncluir.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -188,45 +149,12 @@ public class List_Paciente extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jtfNome, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                            .addComponent(jtfDataNasc)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jbIncluir)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jbAlterar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 255, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jtfNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jtfDataNasc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jbAlterar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jbIncluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))))
-        );
+        jbMenu.setText("<<< Voltar");
+        jbMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jbMenuMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -235,40 +163,52 @@ public class List_Paciente extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jbOrdenar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jbListar, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jbListar, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jbMenu)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jbIncluir)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jbAlterar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jbOrdenar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jbListar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jbListar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jbAlterar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jbIncluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jbExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jbMenu)))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 3, Short.MAX_VALUE))
         );
 
         pack();
@@ -279,69 +219,47 @@ public class List_Paciente extends javax.swing.JFrame {
     }//GEN-LAST:event_jbListarMouseClicked
 
     private void jbIncluirMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbIncluirMouseClicked
-        String dataRecebida = jtfDataNasc.getText();
-        if (Utilidades.DataValida(dataRecebida)) {
-            BuscaValores();
-
-            String values = "'" + Nome + "', '" + DataNasc + "'";
-            String sql = "INSERT INTO Paciente (nome, data_nascimento) VALUES(" + values + ")";
-
-            try {
-                int resp = st.executeUpdate(sql);
-                if (resp == 1) {
-                    LimparCampos();
-                    Listar("");
-                }
-            } catch (SQLException s) {
-                JOptionPane.showMessageDialog(this, "Informações não incluida!! " + s.toString());
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
-        }
+        Form_Paciente form = new Form_Paciente();
+        form.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_jbIncluirMouseClicked
 
     private void jbAlterarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbAlterarMouseClicked
-        String dataRecebida = jtfDataNasc.getText();
-        if (Utilidades.DataValida(dataRecebida)) {
-            BuscaValores();
-
-            String codigoSelecionado = BuscaCodigoSelecionado();
-            String set = " SET nome='" + Nome + "', data_nascimento='" + DataNasc + "'";
-            String where = " WHERE codigo=" + codigoSelecionado;
-            String sql = "UPDATE Paciente" + set + where;
-
-            try {
-                int resp = st.executeUpdate(sql);
-                if (resp == 1) {
-                    LimparCampos();
-                    Listar("");
-                }
-            } catch (SQLException s) {
-                JOptionPane.showMessageDialog(this, "Informações não alteradas!! " + s.toString());
-            }
+        if (LinhaValida()) {
+            Form_Paciente form = new Form_Paciente(BuscaCodigoSelecionado());
+            form.setVisible(true);
+            this.dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Data no Formato Inválido!!\nA data deve estar no formato dd/MM/yyyy");
+            JOptionPane.showMessageDialog(this, "Selecione um registro para Alterar");
         }
     }//GEN-LAST:event_jbAlterarMouseClicked
 
     private void jbExcluirMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbExcluirMouseClicked
-        String codigoSelecionado = BuscaCodigoSelecionado();
-        String sql = "DELETE FROM Paciente WHERE codigo=" + codigoSelecionado;
+        if (LinhaValida()) {
+            String sql = "DELETE FROM Paciente WHERE codigo=" + BuscaCodigoSelecionado();
 
-        try {
-            int resp = st.executeUpdate(sql);
-            if (resp == 1) {
-                LimparCampos();
-                Listar("");
+            try {
+                int resp = st.executeUpdate(sql);
+                if (resp == 1) {
+                    Listar("");
+                }
+            } catch (SQLException s) {
+                JOptionPane.showMessageDialog(this, "Informações não excluidas!! " + s.toString());
             }
-        } catch (SQLException s) {
-            JOptionPane.showMessageDialog(this, "Informações não excluidas!! " + s.toString());
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione um registro para Excluir");
         }
     }//GEN-LAST:event_jbExcluirMouseClicked
 
     private void jbOrdenarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbOrdenarMouseClicked
         Listar("order by nome");
     }//GEN-LAST:event_jbOrdenarMouseClicked
+
+    private void jbMenuMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbMenuMouseClicked
+        GUI_Main form = new GUI_Main();
+        form.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jbMenuMouseClicked
 
     /**
      * @param args the command line arguments
@@ -382,18 +300,14 @@ public class List_Paciente extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton jbAlterar;
     private javax.swing.JButton jbExcluir;
     private javax.swing.JButton jbIncluir;
     private javax.swing.JButton jbListar;
+    private javax.swing.JButton jbMenu;
     private javax.swing.JButton jbOrdenar;
     private javax.swing.JTable jtTabela;
-    private javax.swing.JTextField jtfDataNasc;
-    private javax.swing.JTextField jtfNome;
     // End of variables declaration//GEN-END:variables
 }
